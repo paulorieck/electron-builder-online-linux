@@ -39,10 +39,6 @@ wss.on('error', err => {
     console.dir(err);
 });
 
-server.listen(8080, function () {
-    console.log('Electron Builder Online Web Server listening on port 8080!');
-});
-
 function runYARN(socket, execution_path, callback) {
 
     socket.send(JSON.stringify({"op": "console_output", "message": 'Starting "yarn install"'}));
