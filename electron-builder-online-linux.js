@@ -226,6 +226,6 @@ wss.on('listening', () => {
 
 // -----Web Socket (END) --------------------
 
-server.listen(80, function () {
-    console.log('IPFSSyncro Web Server listening on port 80!');
+server.listen(8080, function () {
+    console.log('Electron-builder-online-linux Web Server listening on port 8080!');
 });
