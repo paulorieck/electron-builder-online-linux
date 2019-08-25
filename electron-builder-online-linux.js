@@ -3,6 +3,7 @@ const session = require('express-session');
 const clone = require('git-clone');
 const rimraf = require('rimraf');
 const path = require('path');
+const os = require('os');
 
 var NedbStore = require('nedb-session-store')(session);
 
@@ -21,7 +22,7 @@ var session_conf =
         maxAge: 3600000
     },
     store: new NedbStore({
-        filename: 'nedbs/sessions.db'
+        filename: path.join(os.homedir(), '.nedbs', 'sessions.db')
     })
 };
 var sess = session(session_conf);
