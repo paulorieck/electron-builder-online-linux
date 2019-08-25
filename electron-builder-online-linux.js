@@ -22,7 +22,7 @@ var session_conf =
         maxAge: 3600000
     },
     store: new NedbStore({
-        filename: path.join(os.homedir(), '.nedbs', 'sessions.db')
+        filename: path.join(os.homedir(), '.electron-builder-online', 'nedbs', 'sessions.db')
     })
 };
 var sess = session(session_conf);
