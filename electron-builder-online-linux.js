@@ -2,6 +2,7 @@ const express = require("express");
 const session = require('express-session');
 const clone = require('git-clone');
 const rimraf = require('rimraf');
+const path = require('path');
 
 var NedbStore = require('nedb-session-store')(session);
 
@@ -12,8 +13,6 @@ const WebSocketServer = require('ws').Server;
 
 var server = http.createServer(app);
 const wss = new WebSocketServer({server});
-
-var confs = JSON.parse(fs.readFileSync("configs.json"));
 
 var session_conf = 
 {
