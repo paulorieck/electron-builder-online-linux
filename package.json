@@ -13,6 +13,9 @@
   "author": "Paulo André Rieck <paulo.rieck@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "git-clone": "^0.1.0",
+    "rimraf": "^3.0.0",
+    "temp-dir": "^2.0.0"
   },
   "bin": {
     "electron-builder-online-linux": "./startup.js"

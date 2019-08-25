@@ -1,5 +1,7 @@
-var express = require("express");
-var session = require('express-session');
+const express = require("express");
+const session = require('express-session');
+const clone = require('git-clone');
+const rimraf = require('rimraf');
 
 var NedbStore = require('nedb-session-store')(session);
 
@@ -12,9 +14,6 @@ var server = http.createServer(app);
 const wss = new WebSocketServer({server});
 
 var confs = JSON.parse(fs.readFileSync("configs.json"));
-
-var connected_clients = [];
-var sockets = []
 
 var session_conf = 
 {
@@ -45,6 +44,115 @@ server.listen(8080, function () {
     console.log('Electron Builder Online Web Server listening on port 8080!');
 });
 
+function runYARN(socket, execution_path, callback) {
+
+    socket.send(JSON.stringify({"op": "console_output", "message": 'Starting "yarn install"'}));
+
+    const {spawn} = require('child_process');
+
+    var args = ["install"];
+
+    const options = {
+        cwd: execution_path,
+        spawn: false
+    }
+
+    const electron = spawn("yarn", args, options);
+
+    electron.stdout.on('data', (log) => {
+        console.log('YARN stdout: ${log}');
+        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN stdout: ${log}'}));
+    });
+
+    electron.stderr.on('data', (log) => {
+        console.log(`YARN stderr: ${log}`);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN stderr: ${log}'}));
+    });
+
+    electron.on('close', (code) => {
+
+        console.log(`YARN child process exited with code ${code}`);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN child process exited with code ${code}'}));
+
+        // Run electron-builder
+        callback();
+
+    });
+
+}
+
+function runNPM(socket, execution_path, callback) {
+
+    socket.send(JSON.stringify({"op": "console_output", "message": 'Starting "npm install"'}));
+
+    const {spawn} = require('child_process');
+
+    var args = ["install"];
+
+    const options = {
+        cwd: execution_path,
+        spawn: false
+    }
+
+    const electron = spawn("NPM", args, options);
+
+    electron.stdout.on('data', (log) => {
+        console.log('NPM stdout: ${log}');
+        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM stdout: ${log}'}));
+    });
+
+    electron.stderr.on('data', (log) => {
+        console.log(`NPM stderr: ${log}`);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM stderr: ${log}'}));
+    });
+
+    electron.on('close', (code) => {
+
+        console.log(`NPM child process exited with code ${code}`);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM child process exited with code ${code}'}));
+
+        callback();
+
+    });
+    
+}
+
+function runElectronBuilder(parameters, execution_path, callback) {
+
+    socket.send(JSON.stringify({"op": "console_output", "message": 'Starting "electron-builder"'}));
+
+    const {spawn} = require('child_process');
+
+    var args = parameters;
+
+    const options = {
+        cwd: execution_path,
+        spawn: false
+    }
+
+    const electron = spawn("electron-builder", args, options);
+
+    electron.stdout.on('data', (log) => {
+        console.log('electron-builder stdout: ${log}');
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: ${log}'}));
+    });
+
+    electron.stderr.on('data', (log) => {
+        console.log(`electron-builder stderr: ${log}`);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: ${log}'}));
+    });
+
+    electron.on('close', (code) => {
+
+        console.log(`electron-builder child process exited with code ${code}`);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code ${code}'}));
+
+        callback();
+
+    });
+
+}
+
 wss.on('connection', (socket, req) => {
 
     console.log('WebSocket client connected...');
@@ -64,7 +172,45 @@ wss.on('connection', (socket, req) => {
 
             var parameters = data.parameters;
 
-            
+            // Check if necessary parameters where provided
+
+
+            // Create a temporary folder
+            const tempDirectory = require('temp-dir');
+
+            // Downloads the GIT repository content to the newly created repository
+            clone(parameters.repository, tempDirectory, [], function () {
+
+                // Run NPM INSTALL or YARN INSTALL
+                if ( parameters.install_with === "yarn" ) {
+
+                    runYARN(socket, path.join(tempDirectory, project_name), function () {
+
+                        // Run electron-builder
+                        runElectronBuilder(parameters, path.join(tempDirectory, project_name), function () {
+                            rimraf(tempDirectory, [], function () { // Removes directory
+                                socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
+                            });
+                        });
+
+                    });
+
+                } else if ( parameters.install_with === "npm" ) {
+
+                    runNPM(socket, path.join(tempDirectory, project_name), function () {
+
+                        // Run electron-builder
+                        runElectronBuilder(parameters, path.join(tempDirectory, project_name), function () {
+                            rimraf(tempDirectory, [], function () { // Removes directory
+                                socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
+                            });    
+                        });
+
+                    });
+
+                }
+
+            });
 
         }
 
@@ -85,6 +231,6 @@ wss.on('listening', () => {
 
 // -----Web Socket (END) --------------------
 
-server.listen(confs.mirror_server, function () {
-    console.log('IPFSSyncro Web Server listening on port '+confs.mirror_server+'!');
+server.listen(80, function () {
+    console.log('IPFSSyncro Web Server listening on port 80!');
 });
