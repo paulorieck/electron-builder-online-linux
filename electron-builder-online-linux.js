@@ -1,6 +1,6 @@
 const express = require("express");
 const session = require('express-session');
-const clone = require('git-clone');
+const clone = require('git-clone-promise');
 const rimraf = require('rimraf');
 const path = require('path');
 const os = require('os');
@@ -172,9 +172,12 @@ wss.on('connection', (socket, req) => {
 
             // Create a temporary folder
             const tempDirectory = require('temp-dir');
+            console.log("tempDirectory: "+tempDirectory+", parameters.name: "+parameters.name+", parameters.repository: "+parameters.repository);
 
             // Downloads the GIT repository content to the newly created repository
-            clone(parameters.repository, tempDirectory, [], function () {
+            clone(parameters.repository, tempDirectory).then(() => {
+
+                console.log("Clonned your repo succesfully!");
 
                 // Run NPM INSTALL or YARN INSTALL
                 if ( parameters.install_with === "yarn" ) {

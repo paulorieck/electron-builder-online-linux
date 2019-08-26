@@ -1,6 +1,6 @@
 {
   "name": "electron-builder-online-linux",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Build electron applications online for windows, linux and mac os x. Automatically deploy them to GitHub Releases",
   "main": "electron-builder-online.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "express-session": "^1.16.2",
-    "git-clone": "^0.1.0",
+    "git-clone-promise": "^1.0.0",
     "nedb-session-store": "^1.1.2",
     "path": "^0.12.7",
     "rimraf": "^3.0.0",
