@@ -86,8 +86,8 @@ function runNPM(socket, execution_path, callback) {
     var args = ["install"];
 
     const options = {
-        //cwd: execution_path,
-        //spawn: false
+        cwd: execution_path,
+        spawn: false
     }
 
     const electron = spawn("npm", args, options);
@@ -153,7 +153,7 @@ wss.on('connection', (socket, req) => {
 
     console.log('WebSocket client connected...');
     sess(req, {}, () => {
-        console.log('Session is parsed!');
+        //console.log('Session is parsed!');
     });
 
     socket.on('error', err => {
