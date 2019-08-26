@@ -170,7 +170,6 @@ wss.on('connection', (socket, req) => {
 
             // Check if necessary parameters where provided
 
-
             // Create a temporary folder
             const tempDirectory = require('temp-dir');
 
@@ -180,10 +179,10 @@ wss.on('connection', (socket, req) => {
                 // Run NPM INSTALL or YARN INSTALL
                 if ( parameters.install_with === "yarn" ) {
 
-                    runYARN(socket, path.join(tempDirectory, project_name), function () {
+                    runYARN(socket, path.join(tempDirectory, parameters.name), function () {
 
                         // Run electron-builder
-                        runElectronBuilder(parameters, path.join(tempDirectory, project_name), function () {
+                        runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
                             rimraf(tempDirectory, [], function () { // Removes directory
                                 socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
                             });
@@ -193,10 +192,10 @@ wss.on('connection', (socket, req) => {
 
                 } else if ( parameters.install_with === "npm" ) {
 
-                    runNPM(socket, path.join(tempDirectory, project_name), function () {
+                    runNPM(socket, path.join(tempDirectory, parameters.name), function () {
 
                         // Run electron-builder
-                        runElectronBuilder(parameters, path.join(tempDirectory, project_name), function () {
+                        runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
                             rimraf(tempDirectory, [], function () { // Removes directory
                                 socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
                             });    
