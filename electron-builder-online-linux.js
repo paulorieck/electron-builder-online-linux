@@ -119,8 +119,10 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
 
     const {spawn} = require('child_process');
 
+    console.log("parameters.gh_token: "+parameters.gh_token);
+
     // Set environment variable
-    const setenv = spawn("export", ['GH_TOKEN='+parameters.gh_token]);
+    const setenv = spawn("export", ["GH_TOKEN="+parameters.gh_token], {cwd: execution_path, spawn: false});
 
     setenv.stdout.on('data', (log) => {
         console.log('setenv stdout: '+log);
@@ -134,7 +136,7 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
 
     setenv.on('close', (code) => {
 
-        var args = "--publish=always";
+        var args = ["--publish=always"];
 
         const options = {
             cwd: execution_path,
