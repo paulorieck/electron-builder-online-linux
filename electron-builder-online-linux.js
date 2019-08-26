@@ -174,39 +174,46 @@ wss.on('connection', (socket, req) => {
             const tempDirectory = require('temp-dir');
             console.log("tempDirectory: "+tempDirectory+", parameters.name: "+parameters.name+", parameters.repository: "+parameters.repository);
 
-            // Downloads the GIT repository content to the newly created repository
-            clone(parameters.repository, tempDirectory).then(() => {
+            // If the directory exists remove it
+            rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
 
-                console.log("Clonned your repo succesfully!");
+                // Downloads the GIT repository content to the newly created repository
+                clone(parameters.repository, path.join(tempDirectory, parameters.name)).then(() => {
 
-                // Run NPM INSTALL or YARN INSTALL
-                if ( parameters.install_with === "yarn" ) {
+                    console.log("Clonned your repo succesfully!");
 
-                    runYARN(socket, path.join(tempDirectory, parameters.name), function () {
+                    // Run NPM INSTALL or YARN INSTALL
+                    if ( parameters.install_with === "yarn" ) {
 
-                        // Run electron-builder
-                        runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
-                            rimraf(tempDirectory, [], function () { // Removes directory
-                                socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
+                        runYARN(socket, path.join(tempDirectory, parameters.name), function () {
+
+                            // Run electron-builder
+                            runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
+                                rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
+                                    socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
+                                });
                             });
+
                         });
 
-                    });
+                    } else if ( parameters.install_with === "npm" ) {
 
-                } else if ( parameters.install_with === "npm" ) {
+                        runNPM(socket, path.join(tempDirectory, parameters.name), function () {
 
-                    runNPM(socket, path.join(tempDirectory, parameters.name), function () {
+                            // Run electron-builder
+                            runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
+                                rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
+                                    socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
+                                });    
+                            });
 
-                        // Run electron-builder
-                        runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
-                            rimraf(tempDirectory, [], function () { // Removes directory
-                                socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
-                            });    
                         });
 
-                    });
+                    }
 
-                }
+                }).catch(function (error) {
+                    console.log("Error: "+error);
+                });
 
             });
 
