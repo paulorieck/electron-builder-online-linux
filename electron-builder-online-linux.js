@@ -86,26 +86,26 @@ function runNPM(socket, execution_path, callback) {
     var args = ["install"];
 
     const options = {
-        cwd: execution_path,
-        spawn: false
+        //cwd: execution_path,
+        //spawn: false
     }
 
-    const electron = spawn("NPM", args, options);
+    const electron = spawn("npm", args, options);
 
     electron.stdout.on('data', (log) => {
-        console.log('NPM stdout: ${log}');
-        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM stdout: ${log}'}));
+        console.log('NPM stdout: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM stdout: '+log}));
     });
 
     electron.stderr.on('data', (log) => {
-        console.log(`NPM stderr: ${log}`);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM stderr: ${log}'}));
+        console.log('NPM stderr: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM stderr: '+log}));
     });
 
     electron.on('close', (code) => {
 
         console.log(`NPM child process exited with code ${code}`);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM child process exited with code ${code}'}));
+        socket.send(JSON.stringify({"op": "console_output", "message": 'NPM child process exited with code '+code}));
 
         callback();
 
@@ -113,7 +113,7 @@ function runNPM(socket, execution_path, callback) {
     
 }
 
-function runElectronBuilder(parameters, execution_path, callback) {
+function runElectronBuilder(socket, parameters, execution_path, callback) {
 
     socket.send(JSON.stringify({"op": "console_output", "message": 'Starting "electron-builder"'}));
 
@@ -188,7 +188,7 @@ wss.on('connection', (socket, req) => {
                         runYARN(socket, path.join(tempDirectory, parameters.name), function () {
 
                             // Run electron-builder
-                            runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
+                            runElectronBuilder(socket, parameters, path.join(tempDirectory, parameters.name), function () {
                                 rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
                                     socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
                                 });
@@ -201,7 +201,7 @@ wss.on('connection', (socket, req) => {
                         runNPM(socket, path.join(tempDirectory, parameters.name), function () {
 
                             // Run electron-builder
-                            runElectronBuilder(parameters, path.join(tempDirectory, parameters.name), function () {
+                            runElectronBuilder(socket, parameters, path.join(tempDirectory, parameters.name), function () {
                                 rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
                                     socket.send(JSON.stringify({"op": "job_concluded", "status": true}));
                                 });    
