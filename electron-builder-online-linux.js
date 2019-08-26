@@ -129,19 +129,19 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
     const electron = spawn("electron-builder", args, options);
 
     electron.stdout.on('data', (log) => {
-        console.log('electron-builder stdout: ${log}');
-        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: ${log}'}));
+        console.log('electron-builder stdout: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: '+log}));
     });
 
     electron.stderr.on('data', (log) => {
-        console.log(`electron-builder stderr: ${log}`);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: ${log}'}));
+        console.log('electron-builder stderr: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: '+log}));
     });
 
     electron.on('close', (code) => {
 
-        console.log(`electron-builder child process exited with code ${code}`);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code ${code}'}));
+        console.log('electron-builder child process exited with code '+code);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code '+code}));
 
         callback();
 
