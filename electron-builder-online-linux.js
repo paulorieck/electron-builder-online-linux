@@ -56,19 +56,19 @@ function runYARN(socket, execution_path, callback) {
     const electron = spawn("yarn", args, options);
 
     electron.stdout.on('data', (log) => {
-        console.log('YARN stdout: ${log}');
-        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN stdout: ${log}'}));
+        console.log('YARN stdout: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN stdout: '+log}));
     });
 
     electron.stderr.on('data', (log) => {
-        console.log(`YARN stderr: ${log}`);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN stderr: ${log}'}));
+        console.log('YARN stderr: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN stderr: '+log}));
     });
 
     electron.on('close', (code) => {
 
-        console.log(`YARN child process exited with code ${code}`);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN child process exited with code ${code}'}));
+        console.log('YARN child process exited with code '+code);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'YARN child process exited with code '+code}));
 
         // Run electron-builder
         callback();
@@ -119,31 +119,48 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
 
     const {spawn} = require('child_process');
 
-    var args = parameters;
+    // Set environment variable
+    const setenv = spawn("export", ['GH_TOKEN='+parameters.gh_token]);
 
-    const options = {
-        cwd: execution_path,
-        spawn: false
-    }
-
-    const electron = spawn("electron-builder", args, options);
-
-    electron.stdout.on('data', (log) => {
-        console.log('electron-builder stdout: '+log);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: '+log}));
+    setenv.stdout.on('data', (log) => {
+        console.log('setenv stdout: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'setenv stdout: '+log}));
     });
 
-    electron.stderr.on('data', (log) => {
-        console.log('electron-builder stderr: '+log);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: '+log}));
+    setenv.stderr.on('data', (log) => {
+        console.log('setenv stderr: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'setenv stderr: '+log}));
     });
 
-    electron.on('close', (code) => {
+    setenv.on('close', (code) => {
 
-        console.log('electron-builder child process exited with code '+code);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code '+code}));
+        var args = "--publish=always";
 
-        callback();
+        const options = {
+            cwd: execution_path,
+            spawn: false
+        }
+
+        const electron = spawn("electron-builder", args, options);
+
+        electron.stdout.on('data', (log) => {
+            console.log('electron-builder stdout: '+log);
+            socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: '+log}));
+        });
+
+        electron.stderr.on('data', (log) => {
+            console.log('electron-builder stderr: '+log);
+            socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: '+log}));
+        });
+
+        electron.on('close', (code) => {
+
+            console.log('electron-builder child process exited with code '+code);
+            socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code '+code}));
+
+            callback();
+
+        });
 
     });
 
