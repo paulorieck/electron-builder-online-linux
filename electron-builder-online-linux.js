@@ -143,7 +143,7 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
     const options = {
         cwd: execution_path,
         spawn: false,
-        env: {GH_TOKEN: parameters.gh_token}
+        env: {GH_TOKEN: parameters.gh_token, PATH: process.env.PATH}
     }
 
     const electron = spawn("electron-builder", args, options);
