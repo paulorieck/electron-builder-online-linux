@@ -7,6 +7,22 @@ const os = require('os');
 
 var NedbStore = require('nedb-session-store')(session);
 
+var confs = {};
+if ( fs.existsSync(path.join(os.homedir(), '.electron-builder-online', 'configs.json')) ) {
+
+    confs = JSON.parse(fs.readFileSync(path.join(os.homedir(), '.electron-builder-online', 'configs.json')));
+
+    if ( typeof confs.linux_server_port === "undefined" ) {
+        confs.linux_server_port = 8080;
+    }
+
+} else {
+
+    confs = {"linux_server_port": 8080};
+
+}
+fs.writeFileSync(path.join(os.homedir(), '.electron-builder-online', 'configs.json'), JSON.stringify(confs));
+
 var app = express();
 
 const http = require('http');
@@ -239,6 +255,6 @@ wss.on('listening', () => {
 
 // -----Web Socket (END) --------------------
 
-server.listen(8080, function () {
-    console.log('Electron-builder-online-linux Web Server listening on port 8080!');
+server.listen(confs.linux_server_port, function () {
+    console.log('Electron-builder-online-linux Web Server listening on port '+onfs.linux_server_port+'!');
 });
