@@ -257,5 +257,5 @@ wss.on('listening', () => {
 // -----Web Socket (END) --------------------
 
 server.listen(confs.linux_server_port, function () {
-    console.log('Electron-builder-online-linux Web Server listening on port '+onfs.linux_server_port+'!');
+    console.log('Electron-builder-online-linux Web Server listening on port '+confs.linux_server_port+'!');
 });
