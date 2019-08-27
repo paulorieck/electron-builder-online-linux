@@ -121,48 +121,32 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
 
     console.log("parameters.gh_token: "+parameters.gh_token);
 
-    // Set environment variable
-    const setenv = exec("export GH_TOKEN="+parameters.gh_token);
+    var args = ["--publish=always"];
 
-    setenv.stdout.on('data', (log) => {
-        console.log('setenv stdout: '+log);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'setenv stdout: '+log}));
+    const options = {
+        cwd: execution_path,
+        spawn: false,
+        env: {GH_TOKEN: parameters.gh_token}
+    }
+
+    const electron = spawn("electron-builder", args, options);
+
+    electron.stdout.on('data', (log) => {
+        console.log('electron-builder stdout: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: '+log}));
     });
 
-    setenv.stderr.on('data', (log) => {
-        console.log('setenv stderr: '+log);
-        socket.send(JSON.stringify({"op": "console_output", "message": 'setenv stderr: '+log}));
+    electron.stderr.on('data', (log) => {
+        console.log('electron-builder stderr: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: '+log}));
     });
 
-    setenv.on('close', (code) => {
+    electron.on('close', (code) => {
 
-        var args = ["--publish=always"];
+        console.log('electron-builder child process exited with code '+code);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code '+code}));
 
-        const options = {
-            cwd: execution_path,
-            spawn: false
-        }
-
-        const electron = spawn("electron-builder", args, options);
-
-        electron.stdout.on('data', (log) => {
-            console.log('electron-builder stdout: '+log);
-            socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stdout: '+log}));
-        });
-
-        electron.stderr.on('data', (log) => {
-            console.log('electron-builder stderr: '+log);
-            socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder stderr: '+log}));
-        });
-
-        electron.on('close', (code) => {
-
-            console.log('electron-builder child process exited with code '+code);
-            socket.send(JSON.stringify({"op": "console_output", "message": 'electron-builder child process exited with code '+code}));
-
-            callback();
-
-        });
+        callback();
 
     });
 
