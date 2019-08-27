@@ -4,6 +4,7 @@ const clone = require('git-clone-promise');
 const rimraf = require('rimraf');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 var NedbStore = require('nedb-session-store')(session);
 
