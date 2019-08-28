@@ -237,7 +237,7 @@ wss.on('connection', (socket, req) => {
 
                 // Downloads the GIT repository content to the newly created repository
                 cloneGit(parameters.repository, path.join(tempDirectory, parameters.name), socket, function () {
-                    
+
                     console.log("Clonned your repo succesfully!");
 
                     // Run NPM INSTALL or YARN INSTALL
@@ -269,8 +269,6 @@ wss.on('connection', (socket, req) => {
 
                     }
 
-                }).catch(function (error) {
-                    console.log("Error: "+error);
                 });
 
             });
