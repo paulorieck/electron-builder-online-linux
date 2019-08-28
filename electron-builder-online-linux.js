@@ -236,7 +236,7 @@ wss.on('connection', (socket, req) => {
             rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
 
                 // Downloads the GIT repository content to the newly created repository
-                cloneGit(parameters.repository, path.join(tempDirectory, parameters.name), socket, function () {
+                cloneGit(parameters.repository, tempDirectory, socket, function () {
 
                     console.log("Clonned your repo succesfully!");
 
