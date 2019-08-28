@@ -1,6 +1,5 @@
 const express = require("express");
 const session = require('express-session');
-const clone = require('git-clone-promise');
 const rimraf = require('rimraf');
 const path = require('path');
 const os = require('os');
@@ -61,6 +60,40 @@ app.use(bodyParser.urlencoded({extended: true})); // to support URL-encoded bodi
 wss.on('error', err => {
     console.dir(err);
 });
+
+function cloneGit(repository, execution_path, socket, callback) {
+
+    const {spawn} = require('child_process');
+
+    var args = ["clone", repository];
+
+    const options = {
+        cwd: execution_path,
+        spawn: false
+    }
+
+    const git = spawn("git", args, options);
+
+    git.stdout.on('data', (log) => {
+        console.log('YARN stdout: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'git stdout: '+log}));
+    });
+
+    git.stderr.on('data', (log) => {
+        console.log('YARN stderr: '+log);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'git stderr: '+log}));
+    });
+
+    git.on('close', (code) => {
+        
+        console.log('YARN child process exited with code '+code);
+        socket.send(JSON.stringify({"op": "console_output", "message": 'git child process exited with code '+code}));
+
+        callback();
+
+    });
+
+}
 
 function runYARN(socket, execution_path, callback) {
 
@@ -203,8 +236,8 @@ wss.on('connection', (socket, req) => {
             rimraf(path.join(tempDirectory, parameters.name), [], function () { // Removes directory
 
                 // Downloads the GIT repository content to the newly created repository
-                clone(parameters.repository, path.join(tempDirectory, parameters.name)).then(() => {
-
+                cloneGit(parameters.repository, path.join(tempDirectory, parameters.name), socket, function () {
+                    
                     console.log("Clonned your repo succesfully!");
 
                     // Run NPM INSTALL or YARN INSTALL
