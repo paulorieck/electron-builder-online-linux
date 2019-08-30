@@ -10,7 +10,7 @@ var NedbStore = require('nedb-session-store')(session);
 var confs = {};
 
 if ( !fs.existsSync(path.join(os.homedir(), '.electron-builder-online')) ) {
-    fs.mkdirSync(path_module.join(homedir, ".electron-builder-online"));
+    fs.mkdirSync(path.join(os.homedir(), ".electron-builder-online"));
 }
 
 if ( fs.existsSync(path.join(os.homedir(), '.electron-builder-online', 'configs.json')) ) {
