@@ -172,7 +172,7 @@ function runElectronBuilder(socket, parameters, execution_path, callback) {
 
     socket.send(JSON.stringify({"op": "console_output", "message": 'Starting "electron-builder"'}));
 
-    const {exec, spawn} = require('child_process');
+    const {spawn} = require('child_process');
 
     console.log("parameters.gh_token: "+parameters.gh_token);
 
